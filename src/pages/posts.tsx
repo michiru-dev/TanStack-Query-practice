@@ -38,7 +38,7 @@ function Posts() {
   // ここのdistructuringされているのは全てmutate関数が実行された時に動くもの
   // mutate関数を実行するときの引数がここでいうpostDataの部分（変更したいデータ）
   // 2つ目の引数はmutateが成功した時にしてしたkeyのキャッシュを無効化し、再取得する
-  const { mutate, isSuccess } = useMutation(
+  const { mutate, isSuccess, isError, isLoading, error } = useMutation(
     (postData) =>
       axios.post('https://jsonplaceholder.typicode.com/posts', postData),
     {
@@ -48,13 +48,24 @@ function Posts() {
     }
   )
 
+  const handleOnClick = (data: any) => {
+    //ここのdataが上のpostDataの部分になる
+    mutate(data)
+  }
+
+  if (isLoading) return 'adding post...'
+  if (isError) return 'error...'
+  if (isSuccess) return 'post added!'
+
   return (
     <div>
       <ul>
         {query.data?.map((data: any) => (
           <li key={data.id}>
             {data.title}
-            <button>ポスト</button>
+            <button onClick={() => handleOnClick({ title: 'hokori' })}>
+              ポスト
+            </button>
           </li>
         ))}
       </ul>
