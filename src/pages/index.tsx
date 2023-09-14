@@ -1,3 +1,9 @@
+import Posts from './posts'
+
 export default function Home() {
-  return <main></main>
+  return (
+    <main>
+      <Posts />
+    </main>
+  )
 }

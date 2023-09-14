@@ -1,8 +1,8 @@
-import { useQueryClient, useQuery } from '@tanstack/react-query'
+import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query'
 import axios from 'axios'
 
 const fetchData = async () => {
-  await axios
+  return await axios
     .get('https://jsonplaceholder.typicode.com/posts')
     .then((res) => res.data)
 }
@@ -32,11 +32,30 @@ function Posts() {
   //queryFnは実行するfetchやaxios
   const query = useQuery({ queryKey: [postByIdKey], queryFn: fetchData })
 
+  // post,put,delete等の変更を行う時に使う。isLoadingとかが自動でついてくる
+  // これを使う1番の理由はpost等でデータ変更次にuseQueryでキャッシュしてるデータも変更したいから
+  // useMutationの中の関数は後でmutateする時に実行してほしい関数だから、ここではまだ実行されてない、登録をしている
+  // ここのdistructuringされているのは全てmutate関数が実行された時に動くもの
+  // mutate関数を実行するときの引数がここでいうpostDataの部分（変更したいデータ）
+  // 2つ目の引数はmutateが成功した時にしてしたkeyのキャッシュを無効化し、再取得する
+  const { mutate, isSuccess } = useMutation(
+    (postData) =>
+      axios.post('https://jsonplaceholder.typicode.com/posts', postData),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: [postByIdKey] })
+      },
+    }
+  )
+
   return (
     <div>
       <ul>
         {query.data?.map((data: any) => (
-          <li key={data.id}>{data.title}</li>
+          <li key={data.id}>
+            {data.title}
+            <button>ポスト</button>
+          </li>
         ))}
       </ul>
     </div>
